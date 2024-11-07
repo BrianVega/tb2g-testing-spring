@@ -24,4 +24,10 @@ public class HearingInterpreterTest {
 
         assertEquals("Laurel", word);
     }
+
+    public void whatIHeardYanny() {
+        String word = hearingInterpreter.whatIheard();
+
+        assertEquals("Yanny", word);
+    }
 }
