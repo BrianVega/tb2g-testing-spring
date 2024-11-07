@@ -1,13 +1,19 @@
 package org.springframework.samples.petclinic.web;
 
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.service.ClinicService;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,12 +41,48 @@ class OwnerControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(ownerController).build();
     }
 
+    @AfterEach
+    void tearDown() {
+      reset(clinicService);
+    }
+
+
     @Test
     void testFindByNameNotFound() throws Exception {
         mockMvc.perform(get("/owners")
-                .param("firstName", "test"))
+                .param("lastName", "test"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("owners/findOwners"));
+    }
+
+    @Test
+    void testProcessFindFormParameterless() throws Exception {
+        mockMvc.perform(get("/owners"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("owners/findOwners"))
+                .andExpect(model().attributeExists("owner"));
+    }
+
+    @Test
+    void testReturnListOfOwners() throws Exception {
+        given(clinicService.findOwnerByLastName("")).willReturn(Lists.newArrayList(new Owner(), new Owner()));
+
+        mockMvc.perform(get("/owners"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("owners/ownersList"));
+    }
+
+    @Test
+    void testFindOwnerOneResult() throws Exception {
+        Owner owner = new Owner();
+        owner.setId(1);
+
+
+        given(clinicService.findOwnerByLastName(anyString())).willReturn(Lists.newArrayList(owner));
+
+        mockMvc.perform(get("/owners"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/owners/1"));
     }
 
 
