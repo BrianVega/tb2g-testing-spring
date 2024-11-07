@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringJUnitWebConfig(locations = {"classpath:spring/mvc-test-config.xml", "classpath:spring/mvc-core-config.xml"})
@@ -44,6 +45,17 @@ class OwnerControllerTest {
     @AfterEach
     void tearDown() {
       reset(clinicService);
+    }
+
+    @Test
+    void testNewOwnerPostValid() throws Exception {
+        mockMvc.perform(post("/owners/new")
+                .param("firstName", "John")
+                .param("lastName", "Doe")
+                .param("Address", "123 Main St")
+                .param("city", "London")
+                .param("telephone", "9999999999"))
+                .andExpect(status().is3xxRedirection());
     }
 
 
